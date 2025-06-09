@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -8,68 +9,129 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  Map data={};
+  late VideoPlayerController _bgController;
+  Map data = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // we’ll actually initialize _bgController later once we know data
+  }
+
+  @override
+  void dispose() {
+    _bgController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // only run once
+    if (data.isEmpty) {
+      data = ModalRoute
+          .of(context)!
+          .settings
+          .arguments as Map;
+
+      final bgFile = data['isdaytime']
+          ? 'assets/day.mp4'
+          : 'assets/night.mp4';
+
+      _bgController = VideoPlayerController.asset(bgFile)
+        ..initialize().then((_) {
+          _bgController
+            ..setLooping(true)
+            ..play();
+          setState(() {}); // now the video is ready
+        });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // final args = ModalRoute.of(context)?.settings.arguments;
-    // if (args != null && args is Map) {
-    //   data = args;
-    // }
-    data = data.isNotEmpty? data : ModalRoute.of(context)?.settings.arguments as Map;
-    print(data);
+    // data is already loaded in didChangeDependencies
+    final isDay = data['isdaytime'] as bool;
+    final textColor = isDay ? Colors.white : Colors.white;
+    final buttonColor = isDay ? Colors.yellow : Colors.white;
+    final bgColor = isDay ? Colors.grey : Colors.black;
 
-    String bg=data['isdaytime']? 'day.jpg' : 'night.jpg';
-    Color bgcolor=data['isdaytime']? Colors.blue : Colors.black;
     return Scaffold(
-      backgroundColor: bgcolor,
+      backgroundColor: bgColor,
       body: SafeArea(
-          child:Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/$bg'),
-                fit: BoxFit.cover,
+        child: Stack(
+          children: [
+            if (_bgController.value.isInitialized)
+              SizedBox.expand(
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: _bgController.value.size.width,
+                    height: _bgController.value.size.height,
+                    child: VideoPlayer(_bgController),
+                  ),
+                ),
               ),
-            ),
-            child: Column(
+
+            Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget> [
+              children: [
                 Center(
                   child: TextButton.icon(
-                      style: TextButton.styleFrom(
-                        backgroundColor: data['isdaytime']? Colors.orange : Colors.white,
-                        foregroundColor: Colors.black,
-                      ),
-                      onPressed: () async {
-                        dynamic result = await Navigator.pushNamed(context, '/location');
+                    style: TextButton.styleFrom(
+                      backgroundColor: buttonColor,
+                      foregroundColor: Colors.black,
+                    ),
+                    onPressed: () async {
+                      final result = await Navigator.pushNamed(context, '/location')
+                      as Map<String, dynamic>?;    // cast to the correct type
+
+                      if (result != null) {
                         setState(() {
-                          data={
+                          data = {
                             'time': result['time'],
                             'location': result['location'],
                             'isdaytime': result['isdaytime'],
                             'flag': result['flag'],
                           };
                         });
-                      },
-                      label: Text('choose location'),
-                      icon: Icon(Icons.edit_location),
+                        // After data changes, reinitialize video:
+                        final newBg = data['isdaytime']
+                            ? 'assets/day.mp4'
+                            : 'assets/night.mp4';
+                        _bgController.pause();
+                        _bgController.dispose();
+                        _bgController = VideoPlayerController.asset(newBg)
+                          ..initialize().then((_) {
+                            _bgController
+                              ..setLooping(true)
+                              ..play();
+                            setState(() {});
+                          });
+                      }
+                    },
+                    label: const Text('choose location'),
+                    icon: const Icon(Icons.edit_location),
                   ),
                 ),
-                SizedBox(height: 10),
-                Text(data['location'],
-                style: TextStyle(
-                  color: data['isdaytime']? Colors.black : Colors.white,
-                  fontSize: 28,
-                  letterSpacing: 2,
-                ),),
-                Text(data['time'],
-                style: TextStyle(
-                  fontSize: 66,
-                  color: data['isdaytime']? Colors.black : Colors.white,
-                ),)
+
+                const SizedBox(height: 10),
+                Text(
+                  data['location'],
+                  style: TextStyle(
+                      color: textColor, fontSize: 28, letterSpacing: 2),
+                ),
+                Text(
+                  data['time'],
+                  style: TextStyle(fontSize: 66, color: textColor),
+                ),
               ],
             ),
-          ),
+          ],
+        ),
       ),
     );
   }
 }
+
