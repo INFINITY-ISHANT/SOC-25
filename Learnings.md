@@ -1,0 +1,17 @@
+### Learnings so Far in flutter
+-scaffold and appbar
+-colours and font
+-stateless widgets and reload
+-images and assets
+-buttons and icons
+-containers and paddings
+-rows and coloumns
+-expanded widgets
+-statefull widgets
+-custom classes
+-cards
+-maps and routing
+-error handling
+-loaders and spinners
+-ternary operator
+-list view builders 
