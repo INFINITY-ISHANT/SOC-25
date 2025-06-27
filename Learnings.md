@@ -1,17 +1,18 @@
 ### Learnings so Far in flutter
--scaffold and appbar
--colours and font
--stateless widgets and reload
--images and assets
--buttons and icons
--containers and paddings
--rows and coloumns
--expanded widgets
--statefull widgets
--custom classes
--cards
--maps and routing
--error handling
--loaders and spinners
--ternary operator
--list view builders 
+- scaffold and appbar
+- colours and font
+- stateless widgets and reload
+- images and assets
+- buttons and icons
+- containers and paddings
+- rows and coloumns
+- expanded widgets
+- statefull widgets
+- custom classes
+- cards
+- maps and routing
+- error handling
+- loaders and spinners
+- ternary operator
+- list view builders 
+- now i am currently learning the backend using node.js and will update this document when i have fully learnt it.
